@@ -857,6 +857,59 @@ installAppInDmgInZip() {
     installFromDMG
 }
 
+installPkgInDmgInZip(){
+    # unzip the archive
+    printlog "Unzipping $archiveName"
+    tar -xf "$archiveName"
+    
+    # locate dmg in zip
+    if [[ -z $pkgName ]]; then
+        # find first file ending with 'dmg'
+        findfiles=$(find "$tmpDir" -iname "*.dmg" -maxdepth 2  )
+        filearray=( ${(f)findfiles} )
+        if [[ ${#filearray} -eq 0 ]]; then
+            cleanupAndExit 22 "couldn't find dmg in zip $archiveName" ERROR
+        fi
+        archiveName="$(basename ${filearray[1]})"
+        # it is now safe to overwrite archiveName for installFromDMG
+        printlog "found dmg: $tmpDir/$archiveName"
+    else
+        # it is now safe to overwrite archiveName for installFromDMG
+        archiveName="$pkgName"
+    fi
+
+    mountDMG
+    # locate pkg in dmg
+    if [[ -z $pkgName ]]; then
+        # find first file ending with 'pkg'
+        findfiles=$(find "$dmgmount" -iname "*.pkg" -type f -maxdepth 1  )
+        printlog "Found pkg(s):\n$findfiles" DEBUG
+        filearray=( ${(f)findfiles} )
+        if [[ ${#filearray} -eq 0 ]]; then
+            cleanupAndExit 20 "couldn't find pkg in dmg $archiveName" ERROR
+        fi
+        archiveName="${filearray[1]}"
+    else
+        if [[ -s "$dmgmount/$pkgName" ]] ; then # was: $tmpDir
+            archiveName="$dmgmount/$pkgName"
+        else
+            # try searching for pkg
+            findfiles=$(find "$dmgmount" -iname "$pkgName") # was: $tmpDir
+            printlog "Found pkg(s):\n$findfiles" DEBUG
+            filearray=( ${(f)findfiles} )
+            if [[ ${#filearray} -eq 0 ]]; then
+                cleanupAndExit 20 "couldn't find pkg “$pkgName” in dmg $archiveName" ERROR
+            fi
+            # it is now safe to overwrite archiveName for installFromPKG
+            archiveName="${filearray[1]}"
+        fi
+    fi
+    printlog "found pkg: $archiveName"
+
+    # installFromPkgs
+    installFromPKG
+}
+
 runUpdateTool() {
     printlog "Function called: runUpdateTool"
     if [[ -x $updateTool ]]; then
