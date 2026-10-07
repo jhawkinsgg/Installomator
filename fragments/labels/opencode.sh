@@ -1,7 +1,12 @@
 opencode)
     name="OpenCode"
     type="dmg"
+    if [[ "$(arch)" == "arm64" ]]; then
+        archiveName="opencode-desktop-mac-arm64.dmg"
+    else
+        archiveName="opencode-desktop-mac-x64.dmg"
+    fi
     downloadURL=$(downloadURLFromGit anomalyco opencode)
-    appNewVersion=$(curl -Ls -o /dev/null -w '%{url_effective}' https://github.com/anomalyco/opencode/releases/latest | sed -E 's#.*/tag/v?##')
+    appNewVersion=$(versionFromGit anomalyco opencode)
     expectedTeamID="5NZ4Q7NXJ4"
     ;;

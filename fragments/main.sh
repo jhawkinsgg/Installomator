@@ -370,8 +370,8 @@ case $type in
     pkgInZip)
         installPkgInZip
         ;;
-    appInDmgInZip)
-        installAppInDmgInZip
+    *InDmgInZip)
+        installItemInDmgInZip
         ;;
     pkgInDmgInZip)
         installPkgInDmgInZip
